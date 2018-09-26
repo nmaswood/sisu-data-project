@@ -5,12 +5,25 @@ Intersection between two lists of files on disk.
 ## Setup
 
 `conda create -n sisuenv anaconda python=3.6`
+
+`source activate sisuenv`
+
 `pip install -e .[dev]`
+
 `python3 setup.py install`
-`python3 sisu/main.py --file_one XYZ --file_town ABC --mem_limit 123 --profile`
+
+`python3 sisu/main.py --file_one XYZ --file_two ABC --mem_limit 123`
 
 
 ## Testing
+
+__This seeds the data dir for testing.__
+__Warning this is pretty slow. You only have to do it once though.__
+__Maybe have a nice cup of Matcha and then come back__
+
+`python sisu/util.py`
+
+You can now run unit tests
 
 `pytest sisu/tests`
 
