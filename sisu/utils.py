@@ -13,7 +13,7 @@ def parse_args(args=None):
 
     Parameters
     ----------
-    prefix : str, optional
+    prefix : list of str, optional
         A argument to parse. Reads from argv if None
     block_size: int , optional
 
@@ -25,26 +25,26 @@ def parse_args(args=None):
     parser = argparse.ArgumentParser(description='Intersect Two Lists')
 
     parser.add_argument(
-        '--file1',
+        '--file_1',
         required=True,
         help='The first file containing newline delimited ascii numbers.',
         type=str)
 
     parser.add_argument(
-        '--file2',
+        '--file_2',
         required=True,
         help='The second file containing newline delimited ascii numbers.',
         type=str
     )
 
     parser.add_argument(
-        '--mem-limit',
+        '--mem_limit',
         help='The upper limit for RAM',
         type=float, default=1.0)
 
     parsed_args = parser.parse_args(args)
 
-    for f in {parser.file_1, parser.file_2}:
+    for f in {parsed_args.file_1, parsed_args.file_2}:
         if not os.path.isfile(f):
             raise argparse.ArgumentError(f'The file {f} does not exist.')
 

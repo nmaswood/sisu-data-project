@@ -1,7 +1,9 @@
 from setuptools import find_packages, setup
 
 requirements = [
+    'pybloom_live'
 ]
+
 dev_requirements = [
     'pytest'
 ]

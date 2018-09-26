@@ -5,6 +5,7 @@ Intersection between two lists of files on disk.
 ## Setup
 
 `conda create -n sisuenv anaconda python=3.6`
+`pip install -e .[dev]`
 `python3 setup.py install`
 `python3 sisu/main.py --file_one XYZ --file_town ABC --mem_limit 123 --profile`
 
