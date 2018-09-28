@@ -124,9 +124,21 @@ def seed():
         # About 4.0K
 
         (
+            'medium-same',
+            (1000, 1200),
+            (1000, 1200),
+        ),
+        (
+            'medium-large-same',
+            (10000, 12000),
+            (10000, 12000),
+        ),
+
+        # About 30MB
+        (
             'large-same',
-            (1000, 1200),
-            (1000, 1200),
+            (4200000, 4500000),
+            (4200000, 4500000),
         ),
         # About 500MB
         (
@@ -147,9 +159,16 @@ def seed():
 
         # x < 4.0K
         (
-            'large-diff',
+            'medium-diff',
             (100, 1200),
             (1000, 1200),
+        ),
+
+        # About 30MB
+        (
+            'large-diff',
+            (420000, 4500000),
+            (4200000, 4500000),
         ),
 
         # About 500MB
@@ -160,11 +179,6 @@ def seed():
         ),
     )
 
-    def _read_nums(path):
-        with open(path, 'r') as infile:
-            nums = infile.readlines()
-        return {int(num.strip()) for num in nums}
-
     prefix = 'sisu/tests/data'
 
     for (name, file1_config, file2_config) in fake_data_config:
@@ -172,14 +186,13 @@ def seed():
         start = time.time()
 
         for idx, (file_size, file_rlimit) in enumerate(
-                {file1_config, file2_config},
-                1):
+                (file1_config, file2_config)):
 
             write_fake_data(f'{prefix}/{name}-{idx}.lst', file_size,
                             file_rlimit)
 
-        file1_nums = _read_nums(f'{prefix}/{name}-1.lst')
-        file2_nums = _read_nums(f'{prefix}/{name}-2.lst')
+        file1_nums = read_nums(f'{prefix}/{name}-0.lst')
+        file2_nums = read_nums(f'{prefix}/{name}-1.lst')
 
         output_string = ''.join([
             f'{num}\n' for num in file1_nums.intersection(file2_nums)
@@ -187,7 +200,26 @@ def seed():
         with open(f'{prefix}/{name}-intersection.lst', 'w') as outfile:
             outfile.write(output_string)
 
-        print(f'Finished {name} in {time.time() - start} seconds')
+        end = time.time()
+        print(f'Finished {name} in {end - start} seconds')
+
+
+def read_nums(path):
+    """Simple helper function that grabs an entire file
+    in memory and parses ints from it
+
+    Parameters
+    ----------
+    path : str
+
+    Returns
+    ------
+    set of int
+    """
+
+    with open(path, 'r') as infile:
+        nums = infile.readlines()
+    return {int(num.strip()) for num in nums}
 
 
 def read_file_by_block(file_, block_size):
@@ -232,7 +264,7 @@ def require_int(function):
 
         Returns
         ------
-        Any
+        function
         """
         if type(args[1]) != int:
             raise ValueError('Argument must be of type int')
@@ -268,6 +300,35 @@ def reorder_by_file_size(function):
 
         return function(file2, file1, mem_limit)
     return wrapper
+
+
+def mb_to_bytes(mb):
+    """Converts # in mb to # in bytes
+
+    Parameters
+    ----------
+    mb : float
+
+    Returns
+    ------
+    int
+    """
+
+    return int(mb * c.MEGABYTE)
+
+
+def bytes_to_ints(bytes_):
+    """Converts # in bytes to # of ints in python
+
+    Parameters
+    ----------
+    bytes_ : int U float
+
+    Returns
+    ------
+    int
+    """
+    return int(bytes_ // c.SIZE_INT)
 
 
 if __name__ == '__main__':

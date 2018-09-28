@@ -6,9 +6,16 @@ import unittest.mock as mock
 import pytest
 
 import sisu.utils as utils
+import sisu.constants as constants
 
 
 def _tokenize_and_flatten(arg_string):
+    """Given an arg string splits each unit in
+    (arg_name, arg_value) tuples and then flattens the result.
+
+    '--foobar baz', '--bazbar foobaz' ->
+    ['--foobar', 'baz', '--bazbar', 'foobaz']
+    """
     return sum([x.split(' ', 1) for x in arg_string], [])
 
 
@@ -83,22 +90,6 @@ def ten_random_one():
     )
 
 
-@pytest.fixture
-def small_same_one():
-    return (
-        13,
-        6,
-        12,
-        14,
-        0,
-        4,
-        8,
-        7,
-        3,
-        2,
-    )
-
-
 def test_write_fake_data(ten_random_one, tmpdir):
     r.seed(0)
 
@@ -112,14 +103,14 @@ def test_write_fake_data(ten_random_one, tmpdir):
     assert actual == ten_random_one
 
 
-def test_read_file_by_block(small_same_one, datadir):
-    path = os.path.join(str(datadir), 'small-same-1.lst')
+def test_read_file_by_block(datadir):
+    path = os.path.join(str(datadir), 'small-same-0.lst')
     lines = utils.read_file_by_block(path, 2)
     as_list = list(lines)
     flat = sum(as_list, [])
 
-    assert len(as_list) == 10 // 2
-    assert tuple(map(int, flat)) == small_same_one
+    assert len(as_list) == 100 // 2
+    assert set(map(int, flat)) == utils.read_nums(path)
 
 
 def test_require_int():
@@ -154,3 +145,26 @@ def test_reorder_by_file_size():
         mock_func.foo.assert_called_with('file1', 'file2', mem_limit)
         func('file2', 'file1', mem_limit)
         mock_func.foo.assert_called_with('file1', 'file2', mem_limit)
+
+
+def test_read_nums(tmpdir, ten_random_one):
+
+    r.seed(0)
+
+    path = os.path.join(tmpdir, 'fake.lst')
+    utils.write_fake_data(path, 10)
+    nums = utils.read_nums(path)
+
+    assert set(ten_random_one) == nums
+
+
+def test_mb_to_bytes():
+    assert utils.mb_to_bytes(1.0) == constants.MEGABYTE
+    assert utils.mb_to_bytes(2.0) == constants.MEGABYTE * 2
+    assert utils.mb_to_bytes(2.34) == int(constants.MEGABYTE * 2.34)
+
+
+def test_bytes_to_ints():
+    assert utils.bytes_to_ints(1000) == 1000 // constants.SIZE_INT
+    assert utils.bytes_to_ints(1234) == 1234 // constants.SIZE_INT
+    assert utils.bytes_to_ints(9999) == 9999 // constants.SIZE_INT

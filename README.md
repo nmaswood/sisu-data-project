@@ -18,7 +18,9 @@ Intersection between two lists of files on disk.
 ## Testing
 
 __This seeds the data dir for testing.__
-__Warning this is pretty slow. You only have to do it once though.__
+
+__Takes about 10 minutes__
+
 __Maybe have a nice cup of Matcha and then come back__
 
 `python sisu/util.py`
@@ -26,6 +28,11 @@ __Maybe have a nice cup of Matcha and then come back__
 You can now run unit tests
 
 `pytest sisu/tests`
+
+
+## Implementation Details
+
+#TODO
 
 ## Problem
 

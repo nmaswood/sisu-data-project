@@ -5,6 +5,7 @@ from glob import iglob
 
 from pybloom_live import ScalableBloomFilter
 import sisu.utils as u
+import sisu.constants as c
 
 
 class _DiskHash():
@@ -111,7 +112,7 @@ class SpillableHash():
         cardinality : int
             The amount of elements in the hash
         capacity : int
-            The amount of elements one can store in memory
+            The amount of ints the hash can fit in memory
         dir : TemporaryDirectory
             Output dir for values in the hash
         _mem : set of int
@@ -124,6 +125,7 @@ class SpillableHash():
         self.cardinality = 0
         self.capacity = capacity
         self._mem = set()
+        # figure out memory profile of bloom filter
         self._bloom = ScalableBloomFilter(
             mode=ScalableBloomFilter.SMALL_SET_GROWTH
         )
@@ -139,6 +141,21 @@ class SpillableHash():
         """
         return self.cardinality >= self.capacity
 
+    @property
+    def available_memory(self):
+        """Returns the amount memory in bytes that was given to the hash
+        map but not used.
+
+        Returns
+        ------
+        int (in bytes)
+
+        """
+        if self._mem_full:
+            return 0
+
+        return (self.capacity - self.cardinality) * c.SIZE_INT
+
     @u.require_int
     def __contains__(self, number):
         """Is this number is any of the sets?
@@ -152,8 +169,10 @@ class SpillableHash():
         element : int
         """
 
-        if not self.mem_full:
-            return number in self._mem
+        if number in self._mem:
+            return True
+        elif not self._mem_full:
+            return False
 
         if number not in self._bloom:
             return False
@@ -182,12 +201,11 @@ class SpillableHash():
             self._mem.add(element)
             return element
 
-        if element in self._disk:
-            return element
+        if element not in self._bloom or element not in self._disk:
+            self._bloom.add(element)
+            self._disk.add(element)
+            self.cardinality += 1
 
-        self._bloom.add(element)
-        self._disk.add(element)
-        self.cardinality += 1
         return element
 
     def flush(self, output, block_size):
