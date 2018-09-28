@@ -44,7 +44,7 @@ class Naive(Strategy):
             file2_ids = {int(num.strip()) for num in f2.readlines()}
 
         hash_map = SpillableHash(float('inf'))
-        for num in file1_ids.intersect(file2_ids):
+        for num in file1_ids.intersection(file2_ids):
             hash_map.add(num)
         return hash_map
 
