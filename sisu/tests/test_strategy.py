@@ -37,8 +37,12 @@ def test_naive(datadir):
     _strategy_test_helper(datadir, strategy.Naive, 'large-same', nil)
 
 
-def test_hash():
-    pass
+def test_hash(datadir):
+    nil = 0
+    _strategy_test_helper(datadir, strategy.Naive, 'small-diff', nil)
+    _strategy_test_helper(datadir, strategy.Naive, 'large-diff', nil)
+    _strategy_test_helper(datadir, strategy.Naive, 'small-same', nil)
+    _strategy_test_helper(datadir, strategy.Naive, 'large-same', nil)
 
 
 def test_merge():

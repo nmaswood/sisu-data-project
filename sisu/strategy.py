@@ -74,7 +74,7 @@ class Hash(Strategy):
 
 class Merge(Strategy):
     @staticmethod
-    def sort(file1, file2, mem_limit):
+    def sort(file1, file2, block_size):
         pass
 
     @staticmethod

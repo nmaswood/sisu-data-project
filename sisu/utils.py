@@ -243,5 +243,32 @@ def require_int(function):
     return wrapper
 
 
+def reorder_by_file_size(function):
+    @wraps(function)
+    def wrapper(file1, file2, mem_limit):
+        """Given a strategy reorders the arguments s.t. the smaller file
+        is always passed in first.
+
+        Parameters
+        ----------
+        file1 : str
+        file2 : str
+        mem : float
+
+        Returns
+        ------
+        function
+        """
+
+        file1_size = os.path.getsize(file1)
+        file2_size = os.path.getsize(file2)
+
+        if file1_size <= file2_size:
+            return function(file1, file2, mem_limit)
+
+        return function(file2, file1, mem_limit)
+    return wrapper
+
+
 if __name__ == '__main__':
     seed()

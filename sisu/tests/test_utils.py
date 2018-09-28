@@ -132,4 +132,25 @@ def test_require_int():
         func({}, 'hi')
         assert str(excinfo.value).endswith('must be of type int.')
 
-    func({}, 1)
+
+def test_reorder_by_file_size():
+
+    mock_func = mock.MagicMock()
+
+    @utils.reorder_by_file_size
+    def func(file1, file2, mem_limit):
+        mock_func.foo(file1, file2, mem_limit)
+
+    mem_limit = 123
+
+    file_d = {
+        'file1': 100,
+        'file2': 1000,
+    }
+
+    with mock.patch.object(os.path, 'getsize') as getsize:
+        getsize.side_effect = lambda x: file_d[x]
+        func('file1', 'file2', mem_limit)
+        mock_func.foo.assert_called_with('file1', 'file2', mem_limit)
+        func('file2', 'file1', mem_limit)
+        mock_func.foo.assert_called_with('file1', 'file2', mem_limit)
