@@ -19,9 +19,7 @@ def test_disk_hash(tmpdir):
     # flush
     path = f'{tmpdir}/out'
     disk_hash.flush(path, 2)
-    with open(path, 'r') as infile:
-        nums = infile.readlines()
-    nums = {int(num.strip()) for num in nums}
+    nums = utils.read_nums(path)
 
     assert nums == set(range(range_limit))
 
@@ -53,8 +51,6 @@ def test_spillable_hash(tmpdir):
     output = f'{tmpdir}/out'
     block_size = 10
     spillable_hash.flush(output, block_size)
-    nums_from_disk = sum(
-        list(utils.read_file_by_block(output, block_size)), []
-    )
+    nums_from_disk = utils.read_nums(output)
 
     assert set(nums_from_disk) == set(range(range_))

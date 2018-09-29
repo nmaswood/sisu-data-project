@@ -4,15 +4,15 @@ from itertools import islice
 from glob import iglob
 
 from pybloom_live import ScalableBloomFilter
-import sisu.utils as u
+
 import sisu.constants as c
+import sisu.utils as u
 
 
 class _DiskHash():
-    """A _DiskHash is a simple data structure that uses a
-    direcotry as a simple a hash map. Each write adds a file
-    to a directory, where the name of the file corresponds
-    to the name of the element.
+    """A _DiskHash is a simple data structure that uses a directory as a simple
+    a hash map. Each write adds a file to a directory, where the name of the
+    file corresponds to the name of the element.
     """
 
     def __init__(self):
@@ -30,7 +30,6 @@ class _DiskHash():
     @u.require_int
     def __contains__(self, element):
         """Returns true if element present in map
-        Performs 1 random seek.
 
         Parameters
         ----------
@@ -47,17 +46,13 @@ class _DiskHash():
 
     @u.require_int
     def add(self, element):
-        """Adds element to set by writing a file to disk
-        with the element as the name of the file.
-
-        NOTE: This function assumes that the caller
-        has already checked if the element is present in
-        the set
+        """Adds element to set by writing a file to disk with the element as
+        the name of the file.
 
         Parameters
         ----------
         element : int
-            Integer to check existence of
+            int to add to hashmap
 
         Returns
         ------
@@ -70,8 +65,7 @@ class _DiskHash():
         return element
 
     def flush(self, output, block_size):
-        """Writes all elements in set to `output` path
-        `block_size` elements at a time.
+        """Writes all elements in set to `output` path `block_size` elements at a time.
 
         Parameters
         ----------
@@ -100,9 +94,9 @@ class _DiskHash():
 
 
 class SpillableHash():
-    """A SpillableHash is set data structure which keeps elements
-    until memory until it reaches its set capacity wherein it spills
-    to a disk map backed by a scalable bloomfilter.
+    """A SpillableHash is a set data structure which keeps elements in memory
+    until it reaches a fixed capacity wherein it spills to a disk. Calls to
+    disk are minimized through the use of a ScalableBloomfilter.
     """
 
     def __init__(self, capacity):
@@ -125,7 +119,8 @@ class SpillableHash():
         self.cardinality = 0
         self.capacity = capacity
         self._mem = set()
-        # figure out memory profile of bloom filter
+        # TODO account for memory footprint of bloom filter
+        # assuming it has a neglible footprint for now
         self._bloom = ScalableBloomFilter(
             mode=ScalableBloomFilter.SMALL_SET_GROWTH
         )
@@ -151,9 +146,9 @@ class SpillableHash():
         int (in bytes)
 
         """
+
         if self._mem_full:
             return 0
-
         return (self.capacity - self.cardinality) * c.SIZE_INT
 
     @u.require_int
@@ -166,7 +161,7 @@ class SpillableHash():
 
         Returns
         ------
-        element : int
+        bool
         """
 
         if number in self._mem:
@@ -204,7 +199,7 @@ class SpillableHash():
         # we are making the assumption that
         # `each integer appears at most once in each file.`
         # can never write same int twice
-        # otherwise uncoment the following line
+        # otherwise uncomment the following line
 
         # if element not in self._bloom or element not in self._disk:
 
@@ -241,6 +236,5 @@ class SpillableHash():
                     acc = []
             if acc:
                 outfile.write(''.join(acc))
-                acc = []
 
         self._disk.flush(output, block_size)

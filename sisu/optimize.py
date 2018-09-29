@@ -5,15 +5,43 @@ import sisu.strategy as s
 import sisu.utils as utils
 
 DEFAULT_CONFIG = {
+    # what constitutes a 'small file'?
     'small_file': 10 * c.MEGABYTE,
+    # what constitutes a 'large file'?
     'large_file': 100 * c.MEGABYTE,
+    # what is a signifacant ratio between the smaller file
+    # and the memory limit?
     'file_to_mem': 2,
+    # what is a signifacant ratio between the larger file
+    # and the smaller file?
     'file_to_file': 5
 }
 
 
 @utils.reorder_by_file_size
 def optimal_strategy(file1, file2, mem_limit, **config):
+    """Given the inputs try to determine which strategy
+    between merging and hashing is most efficient.
+
+    For more details on why these values were chosen
+    go to strategy.py and read the docs there.
+
+    Parameters
+    ----------
+    file1 : str
+        the path to the first file
+    file2 : str
+        the path to the second file
+    mem_limit : float
+        The memory limit in bytes
+
+   config
+        custom kwargs that can be different for each strategy
+
+    Returns
+    ------
+    implementation of Strategy
+    """
 
     if not config:
         config = DEFAULT_CONFIG

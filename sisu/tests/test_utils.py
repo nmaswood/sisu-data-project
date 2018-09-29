@@ -2,11 +2,11 @@ import argparse
 import os
 import random as r
 
-import unittest.mock as mock
 import pytest
+import unittest.mock as mock
 
-import sisu.utils as utils
 import sisu.constants as constants
+import sisu.utils as utils
 
 
 def _tokenize_and_flatten(arg_string):
@@ -95,12 +95,9 @@ def test_write_fake_data(ten_random_one, tmpdir):
 
     path = os.path.join(tmpdir, 'fake.lst')
     utils.write_fake_data(path, 10)
+    actual = utils.read_nums(path)
 
-    with open(path, 'r') as infile:
-        actual = tuple(
-            int(num.strip()) for num in infile.readlines()
-        )
-    assert actual == ten_random_one
+    assert actual == set(ten_random_one)
 
 
 def test_read_file_by_block(datadir):

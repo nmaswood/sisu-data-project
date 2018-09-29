@@ -4,10 +4,8 @@ import subprocess
 import tempfile
 
 from sisu.spillable_hash import SpillableHash
-import sisu.utils as utils
 import sisu.constants as c
-
-from pdb import set_trace
+import sisu.utils as utils
 
 
 class Strategy(metaclass=ABCMeta):
@@ -53,10 +51,8 @@ class Naive(Strategy):
     """
     @staticmethod
     def intersect(file1, file2, _, **__):
-        with open(file1, 'r') as f1, open(file2, 'r') as f2:
-
-            file1_ids = {int(num.strip()) for num in f1.readlines()}
-            file2_ids = {int(num.strip()) for num in f2.readlines()}
+        file1_ids = utils.read_nums(file1)
+        file2_ids = utils.read_nums(file2)
 
         hash_map = SpillableHash(float('inf'))
         for num in file1_ids.intersection(file2_ids):
@@ -65,17 +61,27 @@ class Naive(Strategy):
 
 
 class Hash(Strategy):
+    """The hash strategy has the following tradeoffs
+
+        * The time complexity of this particular hash join is O(N). It only
+        reads a file from memory once. Therefore, if the smaller size file
+        can mostly fit into memory this can extremely fast.
+
+        * However, even if one file is much smaller than the other, if the
+        memory limit is relatively low, due to the way SpillableHash has
+        been implemented, there will be many, many seeks to disk and this
+        method will be extremely slow.
+    """
 
     DEFAULT_CONFIG = {
 
-        # ideally we would like the memory capacity of
-        # build hash to equal the amount of ints in file1
-        # ...however we do not know how many ints are in
-        # the file. That being said, better to overestimate
-        # the size than to underestimate
-        # and end up with many more disk seeks
-        # err on the side of caution and make the size
-        # of the build hash bigger than you may expect
+        # ideally we would like the memory capacity of build hash to equal the
+        # amount of ints in file1 ...however we do not know how many ints are
+        # in the file. That being said, better to overestimate the size than to
+        # underestimate and end up with many many many disk seeks ...
+        # err on the side of caution and make the size of the build hash bigger
+        # than you may expect
+
         'file_size_scale_up': 4,
         'build_hash_memory_threshold': 6/10,
 
@@ -84,6 +90,7 @@ class Hash(Strategy):
         # for our probe_hash?
         # We can make this smaller than our build has because
         # it is upper bounded by the number of values in file1
+        # and most likely there will not be 1:1 intersection
 
         'result_hash': 6/10,
     }
@@ -154,19 +161,42 @@ class Hash(Strategy):
 
 
 class Merge(Strategy):
+    """The merge strategy has the following tradeoffs
+
+        * The time complexity join is O(nln(n)). It needs to sort the file in
+        chunks and write those files to disk as preprocessing. However, doing
+        this work upfront lets us handle arbitrarily large files in managable
+        pieces at a time.
+
+        * For datasets where the memory limit is much smaller than either file
+        and where one file is not signifacantly smaller than the other, this
+        seems like the better choice.
+    """
 
     DEFAULT_CONFIG = {
         # we do not know how many ints are in the smaller of the two lists
         # let's do a rough estimate based on its file size of the smaller file
         # if we overshoot oh well.
-        'result_hash_factor': 3,
-        'result_hash_threshold': 1/2
+        'result_hash_factor': 4,
+        'result_hash_threshold': (6/10)
     }
 
     @staticmethod
     def external_sort(file_, bytes_block_size):
         """ Leverage unix `sort` to external sort the file to an output
         `bytes_block_size` bytes at a time.
+
+        Parameters
+        ----------
+        file_: str
+            the path to file
+
+        bytes_block_size: int
+            memory limit (in bytes)
+
+        Returns
+        ------
+        TemporaryFile
         """
 
         f = tempfile.NamedTemporaryFile()
@@ -175,7 +205,6 @@ class Merge(Strategy):
             'sort', '-n', '-o', f.name, '-S', f'{bytes_block_size}b',
             '-u', file_
         ]
-
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
         result, err = p.communicate()
@@ -202,6 +231,8 @@ class Merge(Strategy):
         )
 
         rest_memory = mem_limit - result_hash_memory
+
+        # give files an equal memory buffer size
         file1_block_memory = file2_block_memory = rest_memory // 2
 
         return (
@@ -214,7 +245,10 @@ class Merge(Strategy):
     @staticmethod
     @utils.reorder_by_file_size
     def intersect(file1, file2, mem_limit, **config):
-
+        """Sort both files using the linux `sort` command which performs
+        external sort. Once both files are sorted, use two pointers to walk
+        through both files and find identical elements.
+        """
         (
             init_read_memory,
             result_hash_memory,

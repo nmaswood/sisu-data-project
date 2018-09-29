@@ -54,9 +54,7 @@ def _strategy_test_helper(dir_, strat, test_file_name, mem_limit, **config):
 
     res = strat.intersect(file1_name, file2_name, mem_limit, **config)
 
-    file_len = _file_len(intersection_name)
-
-    assert res.cardinality == file_len
+    assert res.cardinality == _file_len(intersection_name)
 
 
 def test_naive_intersect(datadir):
@@ -102,8 +100,8 @@ def test_hash_intersect(datadir):
     _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
                           mem_limit)
 
-    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
-    # mem_limit)
+    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
+                          mem_limit)
 
 
 def test_merge_strategy(datadir):
@@ -117,5 +115,5 @@ def test_merge_strategy(datadir):
 
     _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
                           mem_limit)
-    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
-                          # mem_limit)
+    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
+                          mem_limit)
