@@ -8,7 +8,7 @@ Intersection between two lists of files on disk.
 
 `source activate sisuenv`
 
-`pip install -e .[dev]`
+`pip install -e .'[dev]'`
 
 `python3 setup.py install`
 
@@ -17,8 +17,6 @@ Intersection between two lists of files on disk.
 
 __This seeds the data dir for testing.__
 
-__Takes about 10 minutes__
-
 `python sisu/util.py`
 
 You can now run unit tests
@@ -26,22 +24,27 @@ You can now run unit tests
 
 __if you uncomment the tests for `medium-large/large` files in `test_strategy` tests will take a very long time to run.__
 
+
 `pytest sisu/tests`
+
+For example:
+
+`python3 sisu/main.py --file_1 sisu/tests/data/medium-large-same-0.lst --file_2 sisu/tests/data/medium-large-same-1.lst --mem_limit 25`
 
 ## Running
 
 `python3 sisu/main.py --file_one XYZ --file_two ABC --mem_limit 123`
 
+## Notes
+
 When `mem_limit` exceeds file size things slow down considerably. Probably as to be expected...
 
 If I worked on this more, two things I would do:
 
-    * find a way to improve performance of `SpillableHash`
-    * Use gridsearch to find optimal values for allocating/tuning memory. i.e. (see
+* find a way to improve performance of `SpillableHash`. I think in retrospect this was the design decesion that adversely effected performance the most. I believe other implementations of hash join iterate over the data multiple times to get around having to spill values to disk and, without trying it, I think that may be a better way.
+* Use gridsearch to find optimal values for allocating/tuning memory. i.e. (see
     `determine_memory` functions in `strategy.py`
 
-
-#TODO
 
 ## Problem
 

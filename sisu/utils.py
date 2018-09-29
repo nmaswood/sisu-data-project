@@ -190,6 +190,7 @@ def seed():
     )
 
     prefix = 'sisu/tests/data'
+    os.makedirs(prefix, exist_ok=True)
 
     for (name, file1_config, file2_config) in fake_data_config:
 
