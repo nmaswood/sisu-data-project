@@ -21,15 +21,11 @@ __This seeds the data dir for testing.__
 
 You can now run unit tests
 
-
-__if you uncomment the tests for `medium-large/large` files in `test_strategy` tests will take a very long time to run.__
-
-
 `pytest sisu/tests`
 
-For example:
-
 `python3 sisu/main.py --file_1 sisu/tests/data/medium-large-same-0.lst --file_2 sisu/tests/data/medium-large-same-1.lst --mem_limit 25`
+
+__if you uncomment the tests for `medium-large/large` files in `test_strategy` tests will take a very long time to run.__
 
 ## Running
 
