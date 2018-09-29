@@ -92,20 +92,18 @@ def test_hash_intersect(datadir):
     _strategy_test_helper(datadir, strategy.Hash, 'small-diff', mem_limit)
     _strategy_test_helper(datadir, strategy.Hash, 'small-same', mem_limit)
 
+    mem_limit = 2 * c.MEGABYTE
+
     _strategy_test_helper(datadir, strategy.Hash, 'medium-same', mem_limit)
     _strategy_test_helper(datadir, strategy.Hash, 'medium-diff', mem_limit)
 
-    # mem_limit = 1000000000 * c.MEGABYTE
-    # _strategy_test_helper(datadir, strategy.Hash, 'large-diff', mem_limit)
+    mem_limit = c.MEGABYTE
 
-    # mem_limit = c.MEGABYTE * 100
-    # _strategy_test_helper(datadir, strategy.Hash, 'large-same', mem_limit)
+    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
+                          mem_limit)
 
-    # mem_limit = c.MEGABYTE * 100
-    # _strategy_test_helper(datadir, strategy.Hash, 'huge-same', mem_limit)
-
-    # mem_limit = c.MEGABYTE * 100
-    # _strategy_test_helper(datadir, strategy.Hash, 'huge-diff', mem_limit)
+    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
+    # mem_limit)
 
 
 def test_merge_strategy(datadir):
@@ -117,11 +115,7 @@ def test_merge_strategy(datadir):
     _strategy_test_helper(datadir, strategy.Merge, 'medium-same', mem_limit)
     _strategy_test_helper(datadir, strategy.Merge, 'medium-diff', mem_limit)
 
-    # mem_limit = 1000000000 * c.MEGABYTE
-    # _strategy_test_helper(datadir, strategy.Hash, 'large-same', mem_limit)
-
-    # mem_limit = c.MEGABYTE * 100
-    # _strategy_test_helper(datadir, strategy.Hash, 'large-same', mem_limit)
-
-    # mem_limit = c.MEGABYTE * 100
-    # _strategy_test_helper(datadir, strategy.Hash, 'huge-same', mem_limit)
+    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
+                          mem_limit)
+    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
+                          # mem_limit)

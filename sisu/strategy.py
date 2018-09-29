@@ -119,7 +119,7 @@ class Hash(Strategy):
     def intersect(file1, file2, mem_limit, **config):
         """The Hash strategy builds a hash table over the smaller file.
         It then walks through the numbers in the larger file and records
-        ids present from second file that in the first.
+        ids present from second file that are in the first.
         """
         (
             build_hash_memory,
@@ -138,6 +138,11 @@ class Hash(Strategy):
 
         result_hash_int_capacity = result_hash_memory // c.SIZE_INT
 
+        # give back any unused capacity from the build hash map
+        unused_capacity = build_hash.available_memory // c.SIZE_INT
+        result_hash_int_capacity += unused_capacity
+        build_hash.capacity -= unused_capacity
+
         result_hash = SpillableHash(result_hash_int_capacity)
 
         for block in utils.read_file_by_block(file2, block_size):
@@ -151,6 +156,11 @@ class Hash(Strategy):
 class Merge(Strategy):
 
     DEFAULT_CONFIG = {
+        # we do not know how many ints are in the smaller of the two lists
+        # let's do a rough estimate based on its file size of the smaller file
+        # if we overshoot oh well.
+        'result_hash_factor': 3,
+        'result_hash_threshold': 1/2
     }
 
     @staticmethod
@@ -161,8 +171,10 @@ class Merge(Strategy):
 
         f = tempfile.NamedTemporaryFile()
 
-        cmd = ['sort', '-n', '-o', f.name, '-S', f'{bytes_block_size}b',
-               '-u', file_]
+        cmd = [
+            'sort', '-n', '-o', f.name, '-S', f'{bytes_block_size}b',
+            '-u', file_
+        ]
 
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
@@ -181,17 +193,47 @@ class Merge(Strategy):
         if not config:
             config = Merge.DEFAULT_CONFIG
 
+        init_read_memory = mem_limit
+        file1_size = os.path.getsize(file1)
+
+        result_hash_memory = min(
+            mem_limit * config['result_hash_threshold'],
+            file1_size * config['result_hash_factor']
+        )
+
+        rest_memory = mem_limit - result_hash_memory
+        file1_block_memory = file2_block_memory = rest_memory // 2
+
+        return (
+            int(init_read_memory),
+            int(result_hash_memory),
+            int(file1_block_memory),
+            int(file2_block_memory),
+        )
+
     @staticmethod
     @utils.reorder_by_file_size
-    def intersect(file1, file2, mem_limit):
+    def intersect(file1, file2, mem_limit, **config):
 
-        tempfile1 = Merge.external_sort(file1, mem_limit)
-        tempfile2 = Merge.external_sort(file2, mem_limit)
+        (
+            init_read_memory,
+            result_hash_memory,
+            file1_block_memory,
+            file2_block_memory,
+        ) = Merge.determine_memory(file1, file2, mem_limit, **config)
 
-        result_hash = SpillableHash(1000)
+        tempfile1 = Merge.external_sort(file1, init_read_memory)
+        tempfile2 = Merge.external_sort(file2, init_read_memory)
 
-        file1_generator = utils.read_file_by_block(tempfile1.name, 5)
-        file2_generator = utils.read_file_by_block(tempfile2.name, 10)
+        result_hash_int_capacity = result_hash_memory // c.SIZE_INT
+
+        result_hash = SpillableHash(result_hash_int_capacity)
+
+        block1_size = file1_block_memory // c.LARGEST_ELEMENT_SIZE
+        block2_size = file2_block_memory // c.LARGEST_ELEMENT_SIZE
+
+        file1_generator = utils.read_file_by_block(tempfile1.name, block1_size)
+        file2_generator = utils.read_file_by_block(tempfile2.name, block2_size)
 
         block1_pointer = 0
         block2_pointer = 0

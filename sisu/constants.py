@@ -1,14 +1,15 @@
 import sys
 
+# problem given constants ###
 MIN_NUMBER = 0
 MAX_NUMBER = 1 << 63
-
 BYTE = 1
-
 MEGABYTE = BYTE << 20
+
 MIN_MEMORY_BUDGET = MEGABYTE
 MAX_FILE_SIZE = 500 * MEGABYTE
 
+# system constants ###
 SIZE_INT = sys.getsizeof(int())
 
 # when we read a an element from the list

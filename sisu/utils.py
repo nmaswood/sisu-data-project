@@ -43,13 +43,14 @@ def parse_args(args=None):
 
     parser.add_argument(
         '--mem_limit',
+        required=True,
         help='The upper limit for RAM in MB',
-        type=float, default=1.0)
+        type=lambda x: float(x) * c.MEGABYTE)
 
     parsed_args = parser.parse_args(args)
 
     if parsed_args.mem_limit < c.MIN_MEMORY_BUDGET:
-        raise argparse.ArgumentError(
+        raise argparse.ArgumentTypeError(
             f'A memory limit of {parsed_args.mem_limit} is too small.'
         )
 
@@ -162,6 +163,11 @@ def seed():
             'medium-diff',
             (100, 1200),
             (1000, 1200),
+        ),
+        (
+            'medium-large-diff',
+            (1000, 12000),
+            (10000, 12000),
         ),
 
         # About 30MB
@@ -277,7 +283,7 @@ def require_int(function):
 
 def reorder_by_file_size(function):
     @wraps(function)
-    def wrapper(file1, file2, mem_limit):
+    def wrapper(file1, file2, mem_limit, **kwargs):
         """Given a strategy reorders the arguments s.t. the smaller file
         is always passed in first.
 
@@ -296,9 +302,9 @@ def reorder_by_file_size(function):
         file2_size = os.path.getsize(file2)
 
         if file1_size <= file2_size:
-            return function(file1, file2, mem_limit)
+            return function(file1, file2, mem_limit, **kwargs)
 
-        return function(file2, file1, mem_limit)
+        return function(file2, file1, mem_limit, **kwargs)
     return wrapper
 
 

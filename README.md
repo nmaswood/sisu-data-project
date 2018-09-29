@@ -21,8 +21,6 @@ __This seeds the data dir for testing.__
 
 __Takes about 10 minutes__
 
-__Maybe have a nice cup of Matcha and then come back__
-
 `python sisu/util.py`
 
 You can now run unit tests

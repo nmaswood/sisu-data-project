@@ -29,7 +29,7 @@ class _DiskHash():
 
     @u.require_int
     def __contains__(self, element):
-        """Returns truw if element present in map
+        """Returns true if element present in map
         Performs 1 random seek.
 
         Parameters
@@ -201,10 +201,16 @@ class SpillableHash():
             self._mem.add(element)
             return element
 
-        if element not in self._bloom or element not in self._disk:
-            self._bloom.add(element)
-            self._disk.add(element)
-            self.cardinality += 1
+        # we are making the assumption that
+        # `each integer appears at most once in each file.`
+        # can never write same int twice
+        # otherwise uncoment the following line
+
+        # if element not in self._bloom or element not in self._disk:
+
+        self._bloom.add(element)
+        self._disk.add(element)
+        self.cardinality += 1
 
         return element
 

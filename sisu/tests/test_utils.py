@@ -21,7 +21,7 @@ def _tokenize_and_flatten(arg_string):
 
 def test_parse_args():
     expected = {
-        'mem_limit': 12345678.0,
+        'mem_limit': 12345678.0 * constants.MEGABYTE,
         'file_1': 'hello',
         'file_2': 'world',
     }
