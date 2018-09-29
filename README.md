@@ -12,8 +12,6 @@ Intersection between two lists of files on disk.
 
 `python3 setup.py install`
 
-`python3 sisu/main.py --file_one XYZ --file_two ABC --mem_limit 123`
-
 
 ## Testing
 
@@ -25,10 +23,23 @@ __Takes about 10 minutes__
 
 You can now run unit tests
 
+
+__if you uncomment the tests for `medium-large/large` files in `test_strategy` tests will take a very long time to run.__
+
 `pytest sisu/tests`
 
+## Running
 
-## Implementation Details
+`python3 sisu/main.py --file_one XYZ --file_two ABC --mem_limit 123`
+
+When `mem_limit` exceeds file size things slow down considerably. Probably as to be expected...
+
+If I worked on this more, two things I would do:
+
+    * find a way to improve performance of `SpillableHash`
+    * Use gridsearch to find optimal values for allocating/tuning memory. i.e. (see
+    `determine_memory` functions in `strategy.py`
+
 
 #TODO
 
