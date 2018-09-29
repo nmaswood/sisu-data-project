@@ -97,11 +97,11 @@ def test_hash_intersect(datadir):
 
     mem_limit = c.MEGABYTE
 
-    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
-                          mem_limit)
+    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
+    # mem_limit)
 
-    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
-                          mem_limit)
+    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
+    # mem_limit)
 
 
 def test_merge_strategy(datadir):
@@ -113,7 +113,7 @@ def test_merge_strategy(datadir):
     _strategy_test_helper(datadir, strategy.Merge, 'medium-same', mem_limit)
     _strategy_test_helper(datadir, strategy.Merge, 'medium-diff', mem_limit)
 
-    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
-                          mem_limit)
-    _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
-                          mem_limit)
+    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-same',
+    # mem_limit)
+    # _strategy_test_helper(datadir, strategy.Hash, 'medium-large-diff',
+    # mem_limit)
